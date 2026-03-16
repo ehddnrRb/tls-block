@@ -31,16 +31,16 @@ uninstall:
 
 android-install:
 	adb push bin/tc bin/ts bin/uc bin/us /data/local/tmp
-	adb exec-out "su -c 'mount -o rw,remount /system'"
+	adb exec-out "su -c 'mount -o rw,remount /'"
 	adb exec-out "su -c 'cp /data/local/tmp/tc /data/local/tmp/ts /data/local/tmp/uc /data/local/tmp/us /system/xbin'"
 	adb exec-out "su -c 'chmod 755 /system/xbin/tc'"
 	adb exec-out "su -c 'chmod 755 /system/xbin/ts'"
 	adb exec-out "su -c 'chmod 755 /system/xbin/uc'"
 	adb exec-out "su -c 'chmod 755 /system/xbin/us'"
-	adb exec-out "su -c 'mount -o ro,remount /system'"
+	adb exec-out "su -c 'mount -o ro,remount /'"
 	adb exec-out "su -c 'rm /data/local/tmp/tc /data/local/tmp/ts /data/local/tmp/uc /data/local/tmp/us'"
 
 android-uninstall:
-	adb exec-out "su -c 'mount -o rw,remount /system'"
+	adb exec-out "su -c 'mount -o rw,remount /'"
 	adb exec-out "su -c 'rm /system/xbin/tc /system/xbin/ts /system/xbin/uc /system/xbin/us'"
-	adb exec-out "su -c 'mount -o ro,remount /system'"
+	adb exec-out "su -c 'mount -o ro,remount /'"
