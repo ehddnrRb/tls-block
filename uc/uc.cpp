@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
 	//
 	int sd;
 	for (ai = aiOutput; ai != nullptr; ai = ai->ai_next) {
-		sd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+		sd = ::socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 		if (sd != -1) break;
 	}
 	if (ai == nullptr) {

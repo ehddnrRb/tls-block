@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
 	//
 	int sd;
 	for (ai = aiOutput; ai != nullptr; ai = ai->ai_next) {
-		sd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+		sd = ::socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 		if (sd != -1) break;
 	}
 	if (ai == nullptr) {
@@ -203,22 +203,22 @@ int main(int argc, char* argv[]) {
 	//
 	if (param.keepAlive_.idle_ != 0) {
 		int optval = 1;
-		if (setsockopt(sd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&optval, sizeof(int)) < 0) {
+		if (::setsockopt(sd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&optval, sizeof(int)) < 0) {
 			myerror("setsockopt(SO_KEEPALIVE)");
 			return -1;
 		}
 
-		if (setsockopt(sd, IPPROTO_TCP, TCP_KEEPIDLE, (const char*)&param.keepAlive_.idle_, sizeof(int)) < 0) {
+		if (::setsockopt(sd, IPPROTO_TCP, TCP_KEEPIDLE, (const char*)&param.keepAlive_.idle_, sizeof(int)) < 0) {
 			myerror("setsockopt(TCP_KEEPIDLE)");
 			return -1;
 		}
 
-		if (setsockopt(sd, IPPROTO_TCP, TCP_KEEPINTVL, (const char*)&param.keepAlive_.interval_, sizeof(int)) < 0) {
+		if (::setsockopt(sd, IPPROTO_TCP, TCP_KEEPINTVL, (const char*)&param.keepAlive_.interval_, sizeof(int)) < 0) {
 			myerror("setsockopt(TCP_KEEPINTVL)");
 			return -1;
 		}
 
-		if (setsockopt(sd, IPPROTO_TCP, TCP_KEEPCNT, (const char*)&param.keepAlive_.count_, sizeof(int)) < 0) {
+		if (::setsockopt(sd, IPPROTO_TCP, TCP_KEEPCNT, (const char*)&param.keepAlive_.count_, sizeof(int)) < 0) {
 			myerror("setsockopt(TCP_KEEPCNT)");
 			return -1;
 		}
