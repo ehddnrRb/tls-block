@@ -83,7 +83,7 @@ struct tcp_hdr {
 // flow는 (src_ip, dst_ip, src_port, dst_port) 4개로 식별
 // =============================================================================
 #define MAX_FLOWS    512        // 동시에 추적할 수 있는 flow 최대 개수
-#define MAX_FLOW_BUF 16384      // 하나의 flow당 버퍼 크기 (16KB, Client Hello는 이걸 넘지 않음)
+#define MAX_FLOW_BUF 16384      // 하나의 flow당 버퍼 크기 최대값.
 #define FLOW_TIMEOUT 10         // 마지막 패킷 수신 후 10초 지나면 만료 처리
 
 // flow를 식별하는 키 (TCP 5-tuple에서 protocol 제외)
@@ -125,7 +125,7 @@ static struct flow_entry* alloc_flow(const struct flow_key* k) {
     int slot = 0;
     time_t oldest = now + 1;
     for (int i = 0; i < MAX_FLOWS; i++) {
-        if (!g_flows[i].active) { slot = i; goto found; } 
+        if (!g_flows[i].active) { slot = i; goto found; }
         // 활성 슬롯 중 가장 오래된 것 기록
         if (g_flows[i].last_seen < oldest) { oldest = g_flows[i].last_seen; slot = i; }
     }
@@ -138,7 +138,7 @@ found:
     return &g_flows[slot];
 }
 
-// FLOW_TIMEOUT 초 이상 패킷이 안 온 flow는 비활성화 (메모리 낭비 방지)
+// 10초 이상 패킷이 안 온 flow는 비활성화 
 static void expire_flows(void) {
     time_t now = time(NULL);
     for (int i = 0; i < MAX_FLOWS; i++)
@@ -457,7 +457,7 @@ int main(int argc, char* argv[]) {
 		if (data_len <= 0) continue;
 
 		// RST/FIN 오면 그 flow 추적 중단 (연결 끊긴 거니까 더 볼 필요 없음)
-		if (tcp_hdr->flags & (RST | 0x01 )) {
+		if (tcp_hdr->flags & (RST | FIN )) {
 			struct flow_key fkey = {
 				ip_hdr->ip_scr, ip_hdr->ip_dst,
 				tcp_hdr->src_port, tcp_hdr->dst_port
@@ -487,7 +487,7 @@ int main(int argc, char* argv[]) {
 			memcpy(fe->buf + fe->buf_len, data, copy);        // buf 끝에 이어붙임
 			fe->buf_len += copy;
 		}
-		fe->last_seen = time(NULL); // 마지막 수신 시각 갱신
+		fe->last_seen = time(NULL); // 마지막 패킷 수신 시각 업데이트
 
 		// 지금까지 모인 버퍼로 SNI 추출 시도
 		char sni[256];
@@ -497,14 +497,14 @@ int main(int argc, char* argv[]) {
 			continue;
 		}
 
-		// SNI 패턴 매칭 - 차단 대상인지 확인
+		// SNI 패턴 매칭
 		if (strstr(sni, param.pattern_) == NULL) {
 			fe->active = false; // 차단 대상 아님, 추적 중단
 			continue;
 		}
 
 		printf("[*] SNI Founded! Blocked SNI: %s\n", sni);
-		fe->active = false; // 차단 완료, 슬롯 반납
+		fe->active = false; // 차단 이후 추적 stop
 
 		// 양방향으로 RST 전송해서 TLS 연결 강제 종료
 		forward_rst(pcap, eth_hdr, ip_hdr, tcp_hdr, data_len);  // client → server 방향
